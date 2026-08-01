@@ -150,6 +150,44 @@ input:focus {
   color: #2e7d32;
 }
 
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.46);
+}
+
+.confirm-modal.hidden {
+  display: none;
+}
+
+.confirm-card {
+  width: min(100%, 360px);
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #111111);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.confirm-card h2 {
+  margin: 0;
+  font-size: 20px;
+  text-align: center;
+}
+
+.confirm-card p {
+  margin: 10px 0 18px;
+  color: var(--tg-theme-hint-color, #888888);
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+}
+
 @keyframes shimmer {
   from {
     transform: translateX(-100%);

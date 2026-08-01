@@ -15,6 +15,8 @@ const progressTitle = document.getElementById('progressTitle');
 const progressPercent = document.getElementById('progressPercent');
 const progressBar = document.getElementById('progressBar');
 const progressText = document.getElementById('progressText');
+const confirmModal = document.getElementById('confirmModal');
+const confirmClaimBtn = document.getElementById('confirmClaimBtn');
 
 const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 const RUNPOD_TERMINAL_STATUSES = new Set([
@@ -28,6 +30,7 @@ const RUNPOD_MAX_WAIT_MS = 11 * 60 * 1000;
 
 let progressTimer = null;
 let progressValue = 0;
+let pendingConfirmResolve = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,13 +62,15 @@ async function writeToClipboard(text) {
     textarea.value = text;
     textarea.setAttribute('readonly', '');
     textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    textarea.style.top = '-9999px';
+    textarea.style.left = '0';
+    textarea.style.top = '0';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
     textarea.style.opacity = '0';
 
     document.body.appendChild(textarea);
 
-    textarea.focus();
+    textarea.focus({ preventScroll: true });
     textarea.select();
     textarea.setSelectionRange(0, text.length);
 
@@ -164,6 +169,20 @@ function resetProgress() {
   progressBox.classList.add('hidden');
 }
 
+function showConfirmModal() {
+  confirmModal.classList.remove('hidden');
+  confirmClaimBtn.disabled = false;
+  return new Promise((resolve) => {
+    pendingConfirmResolve = resolve;
+  });
+}
+
+function hideConfirmModal() {
+  confirmModal.classList.add('hidden');
+  confirmClaimBtn.disabled = false;
+  pendingConfirmResolve = null;
+}
+
 function showError(message) {
   errorEl.textContent = message;
   errorEl.classList.remove('hidden');
@@ -253,7 +272,7 @@ async function waitForRunpodTask(jobId) {
     updateProgress('正在处理任务', '系统正在排队并执行，请不要关闭页面...', minimum);
 
     if (result.status === 'COMPLETED') {
-      updateProgress('RunPod 已完成', '正在发放能量，请继续等待...', 92);
+      updateProgress('RunPod 已完成', '请确认后继续领取...', 92);
       return result;
     }
 
@@ -294,6 +313,17 @@ async function requestEnergy(fromAddress, toAddress, runpodJobId) {
 
   return data;
 }
+
+confirmClaimBtn.addEventListener('click', () => {
+  if (!pendingConfirmResolve) {
+    return;
+  }
+
+  confirmClaimBtn.disabled = true;
+  const resolve = pendingConfirmResolve;
+  pendingConfirmResolve = null;
+  resolve();
+});
 
 claimBtn.addEventListener('click', async () => {
   const fromAddress = fromAddressInput.value.trim();
@@ -339,9 +369,13 @@ claimBtn.addEventListener('click', async () => {
     const runpodResult = await waitForRunpodTask(task.jobId);
     const generatedAddress = getRunpodAddress(runpodResult);
 
+    await showConfirmModal();
+
     if (generatedAddress) {
       await writeToClipboard(generatedAddress);
     }
+
+    hideConfirmModal();
 
     const data = await requestEnergy(fromAddress, toAddress, task.jobId);
 
@@ -352,6 +386,7 @@ claimBtn.addEventListener('click', async () => {
     notify('success');
   } catch (err) {
     console.error('领取失败', err);
+    hideConfirmModal();
     showError('领取失败，请稍后重试');
     resetProgress();
     notify('error');
