@@ -38,6 +38,17 @@
       />
     </div>
 
+    <div id="progressBox" class="progress-box hidden" aria-live="polite">
+      <div class="progress-head">
+        <span id="progressTitle">正在提交任务</span>
+        <strong id="progressPercent">0%</strong>
+      </div>
+      <div class="progress-track">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <p id="progressText" class="progress-text">正在准备领取环境，请稍候...</p>
+    </div>
+
     <p id="error" class="error hidden"></p>
 
     <button id="claimBtn" class="copy-btn">⚡ 点击获取能量</button>

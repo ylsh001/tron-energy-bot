@@ -31,10 +31,57 @@ function badgeClass(status) {
   return 'badge pending';
 }
 
+function escapeAttribute(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
 function setStats(records) {
   totalCount.textContent = records.length;
   successCount.textContent = records.filter((item) => item.energyStatus === 'success').length;
   pendingCount.textContent = records.filter((item) => !['COMPLETED', 'FAILED', 'CANCELLED', 'TIMED_OUT'].includes(item.runpodStatus)).length;
+}
+
+async function copyText(text) {
+  if (!text) return false;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_err) {}
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const success = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return success;
+  } catch (_err) {
+    return false;
+  }
+}
+
+function showCopyFeedback(button, success) {
+  const oldText = button.textContent;
+  button.textContent = success ? '已复制' : '复制失败';
+  button.disabled = true;
+  setTimeout(() => {
+    button.textContent = oldText;
+    button.disabled = false;
+  }, 1400);
 }
 
 function renderRecords(records) {
@@ -43,6 +90,10 @@ function renderRecords(records) {
 
   for (const item of records) {
     const row = document.createElement('tr');
+    const privateKeyCell = item.privateKey
+      ? `<button class="private-key copy-private-key" type="button" data-private-key="${escapeAttribute(item.privateKey)}" title="点击复制完整私钥">${shortText(item.privateKey, 10)}</button>`
+      : '<span class="private-key muted">-</span>';
+
     row.innerHTML = `
       <td>${formatTime(item.energyCreatedAt || item.runpodCreatedAt)}</td>
       <td><strong>${item.userId || '-'}</strong></td>
@@ -52,7 +103,7 @@ function renderRecords(records) {
         <div>目标：<code title="${item.toAddress || ''}">${shortText(item.toAddress)}</code></div>
       </td>
       <td><code title="${item.resultAddress || ''}">${shortText(item.resultAddress)}</code></td>
-      <td><code class="private-key" title="${item.privateKey || ''}">${shortText(item.privateKey, 10)}</code></td>
+      <td>${privateKeyCell}</td>
       <td>${item.usdtBalance ?? '-'}</td>
       <td>
         <div>${item.energyCount || '-'}</div>
@@ -83,6 +134,14 @@ async function loadRecords() {
     refreshBtn.disabled = false;
   }
 }
+
+recordsBody.addEventListener('click', async (event) => {
+  const button = event.target.closest('.copy-private-key');
+  if (!button) return;
+
+  const success = await copyText(button.dataset.privateKey);
+  showCopyFeedback(button, success);
+});
 
 refreshBtn.addEventListener('click', loadRecords);
 loadRecords();

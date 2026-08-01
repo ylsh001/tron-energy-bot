@@ -10,6 +10,11 @@ const toAddressInput = document.getElementById('toAddress');
 const errorEl = document.getElementById('error');
 const toastEl = document.getElementById('toast');
 const claimBtn = document.getElementById('claimBtn');
+const progressBox = document.getElementById('progressBox');
+const progressTitle = document.getElementById('progressTitle');
+const progressPercent = document.getElementById('progressPercent');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
 
 const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 const RUNPOD_TERMINAL_STATUSES = new Set([
@@ -21,6 +26,9 @@ const RUNPOD_TERMINAL_STATUSES = new Set([
 const RUNPOD_POLL_INTERVAL_MS = 5000;
 const RUNPOD_MAX_WAIT_MS = 11 * 60 * 1000;
 
+let progressTimer = null;
+let progressValue = 0;
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -30,6 +38,7 @@ function notify(type) {
     tg.HapticFeedback.notificationOccurred(type);
   }
 }
+
 async function writeToClipboard(text) {
   if (!text) {
     return false;
@@ -70,6 +79,7 @@ async function writeToClipboard(text) {
     return false;
   }
 }
+
 function getRunpodAddress(result) {
   const candidates = [
     result.address,
@@ -97,6 +107,63 @@ function getRunpodAddress(result) {
     return '';
   }
 }
+
+function setProgress(value, title, text) {
+  progressValue = Math.max(progressValue, Math.min(99, Math.round(value)));
+  progressBar.style.width = `${progressValue}%`;
+  progressPercent.textContent = `${progressValue}%`;
+
+  if (title) {
+    progressTitle.textContent = title;
+  }
+
+  if (text) {
+    progressText.textContent = text;
+  }
+}
+
+function startProgress(title, text) {
+  progressValue = 0;
+  progressBox.classList.remove('hidden');
+  setProgress(3, title, text);
+
+  clearInterval(progressTimer);
+  progressTimer = setInterval(() => {
+    const next = progressValue < 55
+      ? progressValue + Math.random() * 7 + 2
+      : progressValue < 82
+        ? progressValue + Math.random() * 3
+        : progressValue + Math.random() * 0.8;
+
+    setProgress(Math.min(next, 92));
+  }, 900);
+}
+
+function updateProgress(title, text, minimum) {
+  setProgress(minimum || progressValue, title, text);
+}
+
+function finishProgress() {
+  clearInterval(progressTimer);
+  progressTimer = null;
+  progressValue = 100;
+  progressBar.style.width = '100%';
+  progressPercent.textContent = '100%';
+  progressTitle.textContent = '领取完成';
+  progressText.textContent = '能量已成功发放，请查看结果。';
+}
+
+function resetProgress() {
+  clearInterval(progressTimer);
+  progressTimer = null;
+  progressValue = 0;
+  progressBar.style.width = '0%';
+  progressPercent.textContent = '0%';
+  progressTitle.textContent = '正在提交任务';
+  progressText.textContent = '正在准备领取环境，请稍候...';
+  progressBox.classList.add('hidden');
+}
+
 function showError(message) {
   errorEl.textContent = message;
   errorEl.classList.remove('hidden');
@@ -137,6 +204,8 @@ async function readJsonResponse(res) {
 }
 
 async function submitRunpodTask(toAddress) {
+  updateProgress('正在提交任务', '正在生成领取任务，请保持页面打开...', 8);
+
   const res = await fetch('/api/runpod/run', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -151,6 +220,7 @@ async function submitRunpodTask(toAddress) {
     throw new Error(data.error || '领取任务提交失败，请稍后重试');
   }
 
+  updateProgress('任务已提交', 'RunPod 正在处理地址生成，通常需要一点时间...', 18);
   return data;
 }
 
@@ -177,8 +247,13 @@ async function waitForRunpodTask(jobId) {
 
   while (Date.now() - startedAt < RUNPOD_MAX_WAIT_MS) {
     const result = await queryRunpodTask(jobId);
+    const elapsed = Date.now() - startedAt;
+    const minimum = Math.min(88, 22 + (elapsed / RUNPOD_MAX_WAIT_MS) * 68);
+
+    updateProgress('正在处理任务', '系统正在排队并执行，请不要关闭页面...', minimum);
 
     if (result.status === 'COMPLETED') {
+      updateProgress('RunPod 已完成', '正在发放能量，请继续等待...', 92);
       return result;
     }
 
@@ -199,6 +274,8 @@ async function waitForRunpodTask(jobId) {
 }
 
 async function requestEnergy(fromAddress, toAddress, runpodJobId) {
+  updateProgress('正在发放能量', '任务已完成，正在提交能量领取请求...', 94);
+
   const res = await fetch('/api/energy/request', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -255,6 +332,7 @@ claimBtn.addEventListener('click', async () => {
   }
 
   setLoading(true);
+  startProgress('正在准备领取', '正在准备领取环境，请稍候...');
 
   try {
     const task = await submitRunpodTask(toAddress);
@@ -267,6 +345,7 @@ claimBtn.addEventListener('click', async () => {
 
     const data = await requestEnergy(fromAddress, toAddress, task.jobId);
 
+    finishProgress();
     showToast(
       `✅ 领取成功！已为地址充值 ${data.energyCount} 能量，今日剩余 ${data.remainingToday} 次`,
     );
@@ -274,6 +353,7 @@ claimBtn.addEventListener('click', async () => {
   } catch (err) {
     console.error('领取失败', err);
     showError('领取失败，请稍后重试');
+    resetProgress();
     notify('error');
   } finally {
     setLoading(false);

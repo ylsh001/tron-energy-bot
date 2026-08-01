@@ -167,6 +167,35 @@ code {
   color: #ffd6a8;
 }
 
+.copy-private-key {
+  max-width: 240px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 214, 168, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 214, 168, 0.08);
+  color: #ffd6a8;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-private-key:hover,
+.copy-private-key:focus-visible {
+  border-color: rgba(255, 214, 168, 0.42);
+  background: rgba(255, 214, 168, 0.14);
+  outline: none;
+}
+
+.copy-private-key:disabled {
+  opacity: 0.8;
+  cursor: default;
+}
+
+.muted {
+  color: var(--muted);
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
