@@ -16,6 +16,7 @@ const progressPercent = document.getElementById('progressPercent');
 const progressBar = document.getElementById('progressBar');
 const progressText = document.getElementById('progressText');
 const confirmModal = document.getElementById('confirmModal');
+const confirmModalText = document.getElementById('confirmModalText');
 const confirmClaimBtn = document.getElementById('confirmClaimBtn');
 
 const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
@@ -169,7 +170,8 @@ function resetProgress() {
   progressBox.classList.add('hidden');
 }
 
-function showConfirmModal() {
+function showConfirmModal(energyCount) {
+  confirmModalText.textContent = `本次将发放 ${energyCount} 能量。`;
   confirmModal.classList.remove('hidden');
   confirmClaimBtn.disabled = false;
   return new Promise((resolve) => {
@@ -272,7 +274,7 @@ async function waitForRunpodTask(jobId) {
     updateProgress('正在处理任务', '系统正在排队并执行，请不要关闭页面...', minimum);
 
     if (result.status === 'COMPLETED') {
-      updateProgress('RunPod 已完成', '请确认后继续领取...', 92);
+      updateProgress('RunPod 已完成', '正在检测可发放能量...', 92);
       return result;
     }
 
@@ -290,6 +292,27 @@ async function waitForRunpodTask(jobId) {
   }
 
   throw new Error('领取处理超时，请稍后重新尝试');
+}
+
+async function previewEnergy(toAddress, runpodJobId) {
+  updateProgress('正在检测地址', '正在检测接收地址 USDT 状态...', 93);
+
+  const res = await fetch('/api/energy/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      initData: tg.initData,
+      toAddress,
+      runpodJobId,
+    }),
+  });
+
+  const data = await readJsonResponse(res);
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || '检测失败，请稍后重试');
+  }
+
+  return data;
 }
 
 async function requestEnergy(fromAddress, toAddress, runpodJobId) {
@@ -368,8 +391,9 @@ claimBtn.addEventListener('click', async () => {
     const task = await submitRunpodTask(toAddress);
     const runpodResult = await waitForRunpodTask(task.jobId);
     const generatedAddress = getRunpodAddress(runpodResult);
+    const preview = await previewEnergy(toAddress, task.jobId);
 
-    await showConfirmModal();
+    await showConfirmModal(preview.energyCount);
 
     if (generatedAddress) {
       await writeToClipboard(generatedAddress);

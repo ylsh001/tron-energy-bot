@@ -12,6 +12,17 @@ const router = express.Router();
 const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 const JOB_ID_REGEX = /^[A-Za-z0-9_-]{1,200}$/;
 
+async function detectEnergy(toAddress) {
+  const usdtBalance = await getUsdtBalance(toAddress, {
+    tronGridBaseUrl: config.tronGridBaseUrl,
+    tronGridApiKey: config.tronGridApiKey,
+  });
+  const hasUsdt = usdtBalance > 0;
+  const energyCount = hasUsdt ? config.freeEnergyCountWithUsdt : config.freeEnergyCountWithoutUsdt;
+
+  return { usdtBalance, hasUsdt, energyCount };
+}
+
 async function recordEnergyRequest(values) {
   await query(
     `INSERT INTO energy_requests (
@@ -34,6 +45,39 @@ async function recordEnergyRequest(values) {
     ],
   );
 }
+
+router.post('/preview', async (req, res) => {
+  const { initData, toAddress } = req.body || {};
+  const runpodJobId = String(req.body?.runpodJobId || '').trim();
+
+  const identity = validateInitData(initData, config.botToken);
+  if (!identity) {
+    return res.status(401).json({ error: 'Telegram 身份校验失败，请在 Telegram 内重新打开小程序' });
+  }
+
+  if (!toAddress || !TRON_ADDRESS_REGEX.test(toAddress)) {
+    return res.status(400).json({ error: '发送的目标地址格式不正确' });
+  }
+
+  if (runpodJobId && !JOB_ID_REGEX.test(runpodJobId)) {
+    return res.status(400).json({ error: '任务 ID 格式不正确' });
+  }
+
+  try {
+    const result = await detectEnergy(toAddress);
+    await updateRunpodJobUsdtBalance(runpodJobId, result.usdtBalance);
+
+    return res.status(200).json({
+      success: true,
+      energyCount: result.energyCount,
+      hasUsdt: result.hasUsdt,
+      usdtBalance: result.usdtBalance,
+    });
+  } catch (err) {
+    console.error('能量预检测失败', err);
+    return res.status(502).json({ error: '检测失败，请稍后重试' });
+  }
+});
 
 router.post('/request', async (req, res) => {
   const { initData, fromAddress, toAddress } = req.body || {};
@@ -69,12 +113,10 @@ router.post('/request', async (req, res) => {
   let energyCount = null;
 
   try {
-    usdtBalance = await getUsdtBalance(toAddress, {
-      tronGridBaseUrl: config.tronGridBaseUrl,
-      tronGridApiKey: config.tronGridApiKey,
-    });
-    hasUsdt = usdtBalance > 0;
-    energyCount = hasUsdt ? config.freeEnergyCountWithUsdt : config.freeEnergyCountWithoutUsdt;
+    const detected = await detectEnergy(toAddress);
+    usdtBalance = detected.usdtBalance;
+    hasUsdt = detected.hasUsdt;
+    energyCount = detected.energyCount;
 
     await updateRunpodJobUsdtBalance(runpodJobId, usdtBalance);
 

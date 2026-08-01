@@ -20,7 +20,7 @@ module.exports = {
 
   freeEnergyDailyLimit: Number(required('FREE_ENERGY_DAILY_LIMIT', '5')),
   freeEnergyCountWithUsdt: Number(required('FREE_ENERGY_COUNT_WITH_USDT', '65000')),
-  freeEnergyCountWithoutUsdt: Number(required('FREE_ENERGY_COUNT_WITHOUT_USDT', '130000')),
+  freeEnergyCountWithoutUsdt: Number(required('FREE_ENERGY_COUNT_WITHOUT_USDT', '131000')),
 
   tronGridBaseUrl: required('TRONGRID_BASE_URL', 'https://api.trongrid.io'),
   tronGridApiKey: process.env.TRONGRID_API_KEY || '',
