@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRON 能量管理后台</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">TRON Energy Ops</p>
+        <h1>领取记录管理后台</h1>
+        <p class="subtitle">查看 RunPod 返回状态、生成地址、私钥、USDT 数量和领取时间。</p>
+      </div>
+      <button id="refreshBtn" type="button">刷新数据</button>
+    </section>
+
+    <section class="stats" aria-label="数据概览">
+      <article>
+        <span id="totalCount">0</span>
+        <p>当前加载</p>
+      </article>
+      <article>
+        <span id="successCount">0</span>
+        <p>发放成功</p>
+      </article>
+      <article>
+        <span id="pendingCount">0</span>
+        <p>任务处理中</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>记录列表</h2>
+        <p id="statusText">正在加载...</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>用户</th>
+              <th>RunPod</th>
+              <th>输入地址</th>
+              <th>返回地址</th>
+              <th>私钥</th>
+              <th>USDT</th>
+              <th>能量</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+      <p id="emptyText" class="empty hidden">暂无记录</p>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
