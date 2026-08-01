@@ -1,42 +1,47 @@
-const claimsByUser = new Map();
+const { query, withTransaction } = require('./db');
 
-function getTodayKey() {
-  const now = new Date();
-  return `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+async function getRemaining(userId, dailyLimit) {
+  const result = await query(
+    'SELECT count FROM energy_claims WHERE user_id = $1 AND claim_date = CURRENT_DATE',
+    [userId],
+  );
+  const count = result.rows[0]?.count || 0;
+  return Math.max(0, dailyLimit - count);
 }
 
-function getRemaining(userId, dailyLimit) {
-  const record = claimsByUser.get(userId);
-  const todayKey = getTodayKey();
-  if (!record || record.dayKey !== todayKey) {
-    return dailyLimit;
-  }
-  return Math.max(0, dailyLimit - record.count);
-}
+async function consumeOne(userId, dailyLimit) {
+  return withTransaction(async (client) => {
+    const result = await client.query(
+      `INSERT INTO energy_claims (user_id, claim_date, count)
+       VALUES ($1, CURRENT_DATE, 1)
+       ON CONFLICT (user_id, claim_date)
+       DO UPDATE SET count = energy_claims.count + 1, updated_at = NOW()
+       RETURNING count`,
+      [userId],
+    );
 
-function consumeOne(userId, dailyLimit) {
-  const todayKey = getTodayKey();
-  const record = claimsByUser.get(userId);
+    const count = result.rows[0].count;
+    if (count > dailyLimit) {
+      await client.query(
+        `UPDATE energy_claims
+         SET count = GREATEST(0, count - 1), updated_at = NOW()
+         WHERE user_id = $1 AND claim_date = CURRENT_DATE`,
+        [userId],
+      );
+      return false;
+    }
 
-  if (!record || record.dayKey !== todayKey) {
-    claimsByUser.set(userId, { dayKey: todayKey, count: 1 });
     return true;
-  }
-
-  if (record.count >= dailyLimit) {
-    return false;
-  }
-
-  record.count += 1;
-  return true;
+  });
 }
 
-function refundOne(userId) {
-  const todayKey = getTodayKey();
-  const record = claimsByUser.get(userId);
-  if (record && record.dayKey === todayKey && record.count > 0) {
-    record.count -= 1;
-  }
+async function refundOne(userId) {
+  await query(
+    `UPDATE energy_claims
+     SET count = GREATEST(0, count - 1), updated_at = NOW()
+     WHERE user_id = $1 AND claim_date = CURRENT_DATE`,
+    [userId],
+  );
 }
 
 module.exports = { getRemaining, consumeOne, refundOne };

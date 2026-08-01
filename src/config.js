@@ -1,8 +1,7 @@
 require('dotenv').config();
 
 function required(name, fallback) {
-  const value = process.env[name] || fallback;
-  return value;
+  return process.env[name] || fallback;
 }
 
 module.exports = {
@@ -29,4 +28,16 @@ module.exports = {
   energyProviderApiUrl: process.env.ENERGY_PROVIDER_API_URL || '',
   energyProviderApiKey: process.env.ENERGY_PROVIDER_API_KEY || '',
   energyProviderApiSecret: process.env.ENERGY_PROVIDER_API_SECRET || '',
+
+  runpodApiKey: process.env.RUNPOD_API_KEY || '',
+  runpodEndpointId: process.env.RUNPOD_ENDPOINT_ID || '',
+  runpodTaskTimeoutSeconds: Number(required('RUNPOD_TASK_TIMEOUT_SECONDS', '600')),
+  runpodPollIntervalMs: Number(required('RUNPOD_POLL_INTERVAL_MS', '5000')),
+  runpodJobTtlMs: Number(required('RUNPOD_JOB_TTL_MS', '900000')),
+
+  databaseUrl: process.env.DATABASE_URL || '',
+  databaseSsl: required('DATABASE_SSL', 'false') === 'true',
+  dataEncryptionSecret: process.env.DATA_ENCRYPTION_SECRET || '',
+  adminUsername: required('ADMIN_USERNAME', 'admin'),
+  adminPassword: process.env.ADMIN_PASSWORD || '',
 };
