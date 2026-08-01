@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>免费领取能量</title>
+<link rel="stylesheet" href="./style.css" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ 领取能量</h1>
+    <p class="subtitle">填写两个地址，一键获取免费能量</p>
+
+    <div class="field">
+      <label for="fromAddress">需要能量的地址</label>
+      <input
+        id="fromAddress"
+        type="text"
+        inputmode="text"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="请输入 TRON 地址，例如 TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      />
+    </div>
+
+    <div class="field">
+      <label for="toAddress">发送的目标地址</label>
+      <input
+        id="toAddress"
+        type="text"
+        inputmode="text"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="请输入接收转账的 TRON 地址"
+      />
+    </div>
+
+    <p id="error" class="error hidden"></p>
+
+    <button id="claimBtn" class="copy-btn">⚡ 点击获取能量</button>
+
+    <p id="toast" class="toast hidden"></p>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "tron-vanity-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TRON 靓号地址生成服务（独立部署，与其他业务完全隔离，不依赖本仓库其他任何代码）",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "js-sha3": "^0.9.3"
+  }
+}

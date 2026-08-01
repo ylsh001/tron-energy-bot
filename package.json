@@ -1,0 +1,16 @@
+{
+  "name": "tron-energy-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TRON 能量闪租 Telegram 机器人",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-fetch": "^2.7.0",
+    "telegraf": "^4.16.3"
+  }
+}
