@@ -70,7 +70,7 @@ async function updateRunpodJobStatus(jobId, data) {
   const status = data.status || 'UNKNOWN';
   const error = data.error ? String(data.error) : null;
   const result = extractRunpodResult(data);
-  const encryptedPrivateKey = encryptText(result.privateKey);
+  const encryptedPrivateKey = result.privateKey ? encryptText(result.privateKey) : null;
   const finishedAt = isTerminalStatus(status) ? new Date() : null;
 
   await query(
@@ -103,6 +103,12 @@ async function updateRunpodJobStatus(jobId, data) {
      VALUES ($1, $2, $3, $4)`,
     [jobId, status, error, data],
   );
+
+  return {
+    status,
+    error,
+    address: result.address,
+  };
 }
 
 async function updateRunpodJobUsdtBalance(jobId, usdtBalance) {

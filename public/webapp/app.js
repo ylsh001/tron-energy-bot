@@ -30,7 +30,6 @@ function notify(type) {
     tg.HapticFeedback.notificationOccurred(type);
   }
 }
-
 async function writeToClipboard(text) {
   if (!text) {
     return false;
@@ -47,6 +46,7 @@ async function writeToClipboard(text) {
 
   try {
     const textarea = document.createElement('textarea');
+
     textarea.value = text;
     textarea.setAttribute('readonly', '');
     textarea.style.position = 'fixed';
@@ -55,11 +55,13 @@ async function writeToClipboard(text) {
     textarea.style.opacity = '0';
 
     document.body.appendChild(textarea);
+
     textarea.focus();
     textarea.select();
     textarea.setSelectionRange(0, text.length);
 
     const success = document.execCommand('copy');
+
     document.body.removeChild(textarea);
 
     return success;
@@ -68,7 +70,6 @@ async function writeToClipboard(text) {
     return false;
   }
 }
-
 function getRunpodAddress(result) {
   const candidates = [
     result.address,
@@ -79,7 +80,10 @@ function getRunpodAddress(result) {
   ];
 
   for (const value of candidates) {
-    if (typeof value === 'string' && TRON_ADDRESS_REGEX.test(value.trim())) {
+    if (
+      typeof value === 'string' &&
+      TRON_ADDRESS_REGEX.test(value.trim())
+    ) {
       return value.trim();
     }
   }
@@ -87,12 +91,12 @@ function getRunpodAddress(result) {
   try {
     const responseText = JSON.stringify(result);
     const matched = responseText.match(/T[1-9A-HJ-NP-Za-km-z]{33}/);
+
     return matched ? matched[0] : '';
   } catch (_err) {
     return '';
   }
 }
-
 function showError(message) {
   errorEl.textContent = message;
   errorEl.classList.remove('hidden');
@@ -257,11 +261,10 @@ claimBtn.addEventListener('click', async () => {
     const runpodResult = await waitForRunpodTask(task.jobId);
     const generatedAddress = getRunpodAddress(runpodResult);
 
-    if (!generatedAddress) {
-      throw new Error('RunPod 已执行完成，但没有返回有效的 TRON 地址');
+    if (generatedAddress) {
+      await writeToClipboard(generatedAddress);
     }
 
-    await writeToClipboard(generatedAddress);
     const data = await requestEnergy(fromAddress, toAddress, task.jobId);
 
     showToast(
@@ -270,7 +273,7 @@ claimBtn.addEventListener('click', async () => {
     notify('success');
   } catch (err) {
     console.error('领取失败', err);
-    showError(err.message || '领取失败，请稍后重试');
+    showError('领取失败，请稍后重试');
     notify('error');
   } finally {
     setLoading(false);

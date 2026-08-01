@@ -116,16 +116,17 @@ router.post('/status', async (req, res) => {
       endpointId: config.runpodEndpointId,
     });
 
-    const status = data.status || 'UNKNOWN';
-    await updateRunpodJobStatus(jobId, data);
+    const stored = await updateRunpodJobStatus(jobId, data);
+    const status = stored.status;
 
     return res.status(200).json({
       success: true,
       jobId,
       status,
+      address: stored.address || null,
       completed: status === 'COMPLETED',
       terminal: isTerminalStatus(status),
-      error: data.error || null,
+      error: stored.error || null,
     });
   } catch (err) {
     console.error('RunPod 状态查询失败', err);
