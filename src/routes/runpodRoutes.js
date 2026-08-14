@@ -2,6 +2,8 @@ const express = require('express');
 const config = require('../config');
 const { validateInitData } = require('../services/telegramAuth');
 const claimLimiter = require('../services/claimLimiter');
+const { getEnergyBalance } = require('../services/tronGrid');
+const { isUserBlacklisted } = require('../services/blacklistStore');
 const {
   submitRunpodJob,
   getRunpodJobStatus,
@@ -32,9 +34,25 @@ router.post('/run', async (req, res) => {
     });
   }
 
+  const fromAddress = String(req.body?.fromAddress || '').trim();
   const toAddress = String(req.body?.toAddress || '').trim();
+  if (!TRON_ADDRESS_REGEX.test(fromAddress)) {
+    return res.status(400).json({ error: '需要能量的地址格式不正确' });
+  }
   if (!TRON_ADDRESS_REGEX.test(toAddress)) {
     return res.status(400).json({ error: '发送的目标地址格式不正确' });
+  }
+
+  if (await isUserBlacklisted(identity.userId)) {
+    return res.status(403).json({ blocked: true });
+  }
+
+  const energyBalance = await getEnergyBalance(fromAddress, {
+    tronGridBaseUrl: config.tronGridBaseUrl,
+    tronGridApiKey: config.tronGridApiKey,
+  });
+  if (energyBalance > 130000) {
+    return res.status(403).json({ blocked: true });
   }
 
   if ((await claimLimiter.getRemaining(identity.userId, config.freeEnergyDailyLimit)) <= 0) {
@@ -71,6 +89,9 @@ router.post('/run', async (req, res) => {
     await createRunpodJob({
       id: job.id,
       userId: identity.userId,
+      firstName: identity.firstName,
+      username: identity.username,
+      fromAddress,
       suffix,
       toAddress,
       status,

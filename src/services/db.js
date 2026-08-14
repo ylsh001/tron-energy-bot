@@ -75,6 +75,14 @@ async function initDatabase() {
   `);
 
   await query(`
+    ALTER TABLE runpod_jobs
+    ADD COLUMN IF NOT EXISTS first_name TEXT,
+    ADD COLUMN IF NOT EXISTS username TEXT,
+    ADD COLUMN IF NOT EXISTS from_address TEXT,
+    ADD COLUMN IF NOT EXISTS usdt_balance NUMERIC(36, 6)
+  `);
+
+  await query(`
     CREATE INDEX IF NOT EXISTS idx_runpod_jobs_user_status_created
     ON runpod_jobs (user_id, status, created_at DESC)
   `);
@@ -117,6 +125,23 @@ async function initDatabase() {
   await query(`
     CREATE INDEX IF NOT EXISTS idx_energy_requests_created
     ON energy_requests (created_at DESC)
+  `);
+
+  await query(`
+    CREATE INDEX IF NOT EXISTS idx_energy_requests_from_status
+    ON energy_requests (from_address, status, created_at DESC)
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS user_blacklist (
+      user_id TEXT PRIMARY KEY,
+      first_name TEXT,
+      username TEXT,
+      reason TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'manual',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
   `);
 }
 
