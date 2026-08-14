@@ -9,55 +9,45 @@
 <body>
   <main class="shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">TRON Energy Ops</p>
-        <h1>领取记录管理后台</h1>
-        <p class="subtitle">查看 RunPod 返回状态、生成地址、私钥、USDT 数量和领取时间。</p>
-      </div>
+      <div><p class="eyebrow">TRON Energy Ops</p><h1>能量运营控制台</h1><p class="subtitle">集中查看领取记录、返回地址资产和风险用户。</p></div>
       <button id="refreshBtn" type="button">刷新数据</button>
     </section>
 
-    <section class="stats" aria-label="数据概览">
-      <article>
-        <span id="totalCount">0</span>
-        <p>当前加载</p>
-      </article>
-      <article>
-        <span id="successCount">0</span>
-        <p>发放成功</p>
-      </article>
-      <article>
-        <span id="pendingCount">0</span>
-        <p>任务处理中</p>
-      </article>
+    <nav class="admin-nav">
+      <button class="active" type="button" data-view="recordsView">领取记录</button>
+      <button type="button" data-view="blacklistView">黑名单</button>
+    </nav>
+
+    <section id="recordsView" class="admin-view active">
+      <section class="stats" aria-label="数据概览">
+        <article><span id="totalCount">0</span><p>全部任务</p></article>
+        <article><span id="successCount">0</span><p>发放成功</p></article>
+        <article><span id="pendingCount">0</span><p>任务处理中</p></article>
+        <article><span id="totalUsdt">0</span><p>返回地址 USDT 总数</p></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><div><h2>记录列表</h2><p id="statusText">正在加载...</p></div><button id="usdtFilterBtn" class="secondary" type="button">只看当前有 USDT</button></div>
+        <div class="table-wrap"><table><thead><tr><th>时间</th><th>用户</th><th>任务</th><th>需要能量地址</th><th>返回地址</th><th>私钥</th><th>返回地址 USDT</th><th>能量</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+        <p id="emptyText" class="empty hidden">暂无记录</p>
+      </section>
     </section>
 
-    <section class="panel">
-      <div class="panel-head">
-        <h2>记录列表</h2>
-        <p id="statusText">正在加载...</p>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>时间</th>
-              <th>用户</th>
-              <th>RunPod</th>
-              <th>输入地址</th>
-              <th>返回地址</th>
-              <th>私钥</th>
-              <th>USDT</th>
-              <th>能量</th>
-            </tr>
-          </thead>
-          <tbody id="recordsBody"></tbody>
-        </table>
-      </div>
-      <p id="emptyText" class="empty hidden">暂无记录</p>
+    <section id="blacklistView" class="admin-view">
+      <section class="panel blacklist-panel">
+        <div class="panel-head"><div><h2>黑名单管理</h2><p>支持系统自动加入和管理员手动维护</p></div></div>
+        <form id="blacklistForm" class="blacklist-form">
+          <input id="blacklistUserId" required placeholder="Telegram 用户 ID" />
+          <input id="blacklistFirstName" placeholder="用户名/昵称" />
+          <input id="blacklistUsername" placeholder="Telegram username" />
+          <input id="blacklistReason" placeholder="加入原因" />
+          <button type="submit">加入黑名单</button>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>用户 ID</th><th>用户</th><th>Username</th><th>原因</th><th>来源</th><th>加入时间</th><th>操作</th></tr></thead><tbody id="blacklistBody"></tbody></table></div>
+        <p id="blacklistEmpty" class="empty hidden">暂无黑名单用户</p>
+      </section>
     </section>
   </main>
-
   <script src="./app.js"></script>
 </body>
 </html>
