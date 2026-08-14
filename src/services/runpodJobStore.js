@@ -33,18 +33,21 @@ function extractRunpodResult(data) {
   };
 }
 
-async function createRunpodJob({ id, userId, suffix, toAddress, status, rawResponse }) {
+async function createRunpodJob({ id, userId, firstName, username, fromAddress, suffix, toAddress, status, rawResponse }) {
   await query(
-    `INSERT INTO runpod_jobs (id, user_id, suffix, to_address, status, raw_response)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO runpod_jobs (id, user_id, first_name, username, from_address, suffix, to_address, status, raw_response)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      ON CONFLICT (id) DO UPDATE SET
        user_id = EXCLUDED.user_id,
+       first_name = EXCLUDED.first_name,
+       username = EXCLUDED.username,
+       from_address = EXCLUDED.from_address,
        suffix = EXCLUDED.suffix,
        to_address = EXCLUDED.to_address,
        status = EXCLUDED.status,
        raw_response = EXCLUDED.raw_response,
        updated_at = NOW()`,
-    [id, userId, suffix, toAddress, status, rawResponse || null],
+    [id, userId, firstName || null, username || null, fromAddress, suffix, toAddress, status, rawResponse || null],
   );
 }
 
@@ -119,7 +122,36 @@ async function updateRunpodJobUsdtBalance(jobId, usdtBalance) {
   );
 }
 
-async function listAdminRecords({ limit = 100, offset = 0 } = {}) {
+async function getAdminStats() {
+  const result = await query(
+    `SELECT
+       COUNT(*) AS total_count,
+       COUNT(*) FILTER (WHERE e.status = 'success') AS success_count,
+       COUNT(*) FILTER (WHERE j.status NOT IN ('COMPLETED', 'FAILED', 'CANCELLED', 'TIMED_OUT')) AS pending_count,
+       COALESCE((SELECT SUM(address_balance) FROM (
+         SELECT MAX(usdt_balance) AS address_balance
+         FROM runpod_jobs
+         WHERE result_address IS NOT NULL
+         GROUP BY result_address
+       ) balances), 0) AS total_usdt
+     FROM runpod_jobs j
+     LEFT JOIN LATERAL (
+       SELECT status FROM energy_requests er
+       WHERE er.runpod_job_id = j.id
+       ORDER BY er.created_at DESC
+       LIMIT 1
+     ) e ON TRUE`,
+  );
+  const row = result.rows[0];
+  return {
+    totalCount: Number(row.total_count || 0),
+    successCount: Number(row.success_count || 0),
+    pendingCount: Number(row.pending_count || 0),
+    totalUsdt: Number(row.total_usdt || 0),
+  };
+}
+
+async function listAdminRecords({ limit = 100, offset = 0, withUsdt = false } = {}) {
   const result = await query(
     `SELECT
        j.id,
@@ -150,9 +182,10 @@ async function listAdminRecords({ limit = 100, offset = 0 } = {}) {
        ORDER BY er.created_at DESC
        LIMIT 1
      ) e ON TRUE
+     WHERE ($3::boolean = FALSE OR COALESCE(j.usdt_balance, 0) > 0)
      ORDER BY j.created_at DESC
      LIMIT $1 OFFSET $2`,
-    [limit, offset],
+    [limit, offset, withUsdt],
   );
 
   return result.rows.map((row) => ({
@@ -169,7 +202,7 @@ async function listAdminRecords({ limit = 100, offset = 0 } = {}) {
       nonce: row.private_key_nonce,
       tag: row.private_key_tag,
     }),
-    usdtBalance: row.request_usdt_balance || row.runpod_usdt_balance,
+    usdtBalance: row.runpod_usdt_balance ?? row.request_usdt_balance ?? 0,
     energyCount: row.energy_count,
     hasUsdt: row.has_usdt,
     energyStatus: row.energy_status,
@@ -188,4 +221,5 @@ module.exports = {
   updateRunpodJobStatus,
   updateRunpodJobUsdtBalance,
   listAdminRecords,
+  getAdminStats,
 };
