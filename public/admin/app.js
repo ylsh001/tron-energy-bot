@@ -25,11 +25,6 @@ function formatTime(value) {
   return value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(value)) : '-';
 }
 
-function shortText(value, size = 10) {
-  const text = String(value || '');
-  return text.length > size * 2 ? `${text.slice(0, size)}…${text.slice(-size)}` : text || '-';
-}
-
 function badge(status) {
   const type = status === 'COMPLETED' || status === 'success' ? 'success' : status === 'FAILED' || status === 'failed' ? 'danger' : 'pending';
   return `<span class="badge ${type}">${escapeHtml(status || '-')}</span>`;
@@ -46,10 +41,11 @@ function renderRecords(records) {
       <td>${formatTime(item.runpodCreatedAt)}</td>
       <td><strong>${escapeHtml(item.userId)}</strong></td>
       <td>${badge(item.runpodStatus)}<br>${badge(item.energyStatus)}</td>
-      <td><code title="${escapeHtml(item.fromAddress)}">${escapeHtml(shortText(item.fromAddress))}</code></td>
-      <td><code title="${escapeHtml(item.resultAddress)}">${escapeHtml(shortText(item.resultAddress))}</code></td>
+      <td><code class="full-address">${escapeHtml(item.fromAddress || '-')}</code></td>
+      <td><code class="full-address">${escapeHtml(item.toAddress || '-')}</code></td>
+      <td><code class="full-address">${escapeHtml(item.resultAddress || '-')}</code></td>
       <td><button class="copy-value" data-copy="${escapeHtml(item.privateKey)}" ${item.privateKey ? '' : 'disabled'}>复制私钥</button></td>
-      <td><strong>${Number(item.usdtBalance || 0).toFixed(6)}</strong></td>
+      <td><strong>${Number(item.runpodAddressUsdt || 0).toFixed(6)}</strong></td>
       <td>${escapeHtml(item.energyCount || '-')}</td>
     </tr>`).join('');
   emptyText.classList.toggle('hidden', records.length > 0);

@@ -67,13 +67,25 @@ h1 {
 }
 
 button {
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: 12px 18px;
-  background: var(--accent);
-  color: #06110d;
+  background: #1a2740;
+  color: var(--text);
   font-weight: 800;
   cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+button:hover,
+button:focus-visible {
+  border-color: rgba(67, 217, 163, 0.48);
+  background: #223453;
+  outline: none;
+}
+
+button:active {
+  transform: translateY(1px);
 }
 
 button:disabled {
@@ -81,9 +93,9 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.admin-nav { display: flex; gap: 8px; margin-bottom: 18px; padding: 6px; width: fit-content; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
-.admin-nav button { padding: 9px 16px; border: 0; border-radius: 10px; color: var(--muted); background: transparent; font-weight: 700; }
-.admin-nav button.active { color: #fff; background: var(--accent); }
+.admin-nav { display: flex; gap: 8px; margin-bottom: 18px; padding: 6px; width: fit-content; border: 1px solid var(--line); border-radius: 14px; background: rgba(9, 14, 28, 0.82); }
+.admin-nav button { padding: 9px 16px; border: 1px solid transparent; border-radius: 10px; color: var(--muted); background: #121a2d; font-weight: 700; }
+.admin-nav button.active { border-color: rgba(67, 217, 163, 0.38); color: var(--accent); background: #1a2c3c; }
 .admin-view { display: none; }
 .admin-view.active { display: block; }
 
@@ -226,14 +238,15 @@ code {
   color: var(--pending);
 }
 
-.secondary { padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--accent); background: #fff; font-weight: 700; }
-.secondary.active { color: #fff; background: var(--accent); }
+.secondary { padding: 9px 14px; border: 1px solid rgba(67, 217, 163, 0.24); border-radius: 10px; color: var(--accent); background: #15243a; font-weight: 700; }
+.secondary.active { border-color: rgba(67, 217, 163, 0.5); color: #8ef0cc; background: #1a3440; }
 .blacklist-form { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1.5fr auto; gap: 10px; margin-bottom: 18px; }
-.blacklist-form input { min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
-.blacklist-form button, .danger-btn { border: 0; border-radius: 10px; color: #fff; font-weight: 700; }
-.blacklist-form button { padding: 10px 16px; background: var(--accent); }
-.danger-btn { padding: 7px 11px; background: #cf4155; }
-.copy-value { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--accent); background: #fff; }
+.blacklist-form input { min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: #0e1728; }
+.blacklist-form button, .danger-btn { border-radius: 10px; color: var(--text); font-weight: 700; }
+.blacklist-form button { padding: 10px 16px; background: #1b3042; }
+.danger-btn { padding: 7px 11px; border-color: rgba(255, 107, 122, 0.3); background: #3a1f2a; }
+.copy-value { padding: 7px 10px; border: 1px solid rgba(67, 217, 163, 0.24); border-radius: 8px; color: var(--accent); background: #15243a; }
+.full-address { display: inline-block; min-width: 300px; color: #d7e3ff; white-space: nowrap; user-select: all; }
 code { font-size: 12px; }
 
 .empty {

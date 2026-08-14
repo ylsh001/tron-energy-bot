@@ -202,7 +202,7 @@ async function listAdminRecords({ limit = 100, offset = 0, withUsdt = false } = 
       nonce: row.private_key_nonce,
       tag: row.private_key_tag,
     }),
-    usdtBalance: row.runpod_usdt_balance ?? row.request_usdt_balance ?? 0,
+    runpodAddressUsdt: row.runpod_usdt_balance ?? 0,
     energyCount: row.energy_count,
     hasUsdt: row.has_usdt,
     energyStatus: row.energy_status,
