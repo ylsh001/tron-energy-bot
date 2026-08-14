@@ -9,8 +9,24 @@
 <body>
   <main class="shell">
     <section class="hero">
-      <div><p class="eyebrow">TRON Energy Ops</p><h1>能量运营控制台</h1><p class="subtitle">集中查看领取记录、返回地址资产和风险用户。</p></div>
-      <button id="refreshBtn" type="button">刷新数据</button>
+      <div>
+        <p class="eyebrow">TRON Energy Ops</p>
+        <h1>能量运营控制台</h1>
+        <p class="subtitle">集中查看领取记录、返回地址资产和风险用户。</p>
+      </div>
+      <div class="hero-actions">
+        <button id="monitorToggleBtn" class="monitor-toggle" type="button">监控加载中</button>
+        <button id="refreshBtn" type="button">立即查询余额</button>
+      </div>
+    </section>
+
+    <section class="monitor-bar" aria-live="polite">
+      <span id="monitorDot" class="monitor-dot"></span>
+      <div>
+        <strong id="monitorState">正在读取监控状态</strong>
+        <p id="monitorTime">最近查询时间：--</p>
+      </div>
+      <p id="monitorDetail">每分钟通过 TronGrid 更新 RunPod 返回地址余额</p>
     </section>
 
     <nav class="admin-nav">
@@ -27,8 +43,16 @@
       </section>
 
       <section class="panel">
-        <div class="panel-head"><div><h2>记录列表</h2><p id="statusText">正在加载...</p></div><button id="usdtFilterBtn" class="secondary" type="button">只看当前有 USDT</button></div>
-        <div class="table-wrap"><table><thead><tr><th>时间</th><th>用户</th><th>任务</th><th>需要能量地址</th><th>目标地址</th><th>RunPod 返回地址</th><th>私钥</th><th>RunPod 返回地址 USDT</th><th>能量</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+        <div class="panel-head">
+          <div><h2>记录列表</h2><p id="statusText">正在加载...</p></div>
+          <button id="usdtFilterBtn" class="secondary" type="button">只看当前有 USDT</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>时间</th><th>Telegram 用户</th><th>任务</th><th>交易地址</th><th>RunPod 返回地址</th><th>私钥</th><th>返回地址 USDT</th><th>能量</th></tr></thead>
+            <tbody id="recordsBody"></tbody>
+          </table>
+        </div>
         <p id="emptyText" class="empty hidden">暂无记录</p>
       </section>
     </section>
