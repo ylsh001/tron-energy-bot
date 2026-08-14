@@ -22,88 +22,61 @@ let manualRefreshPending = false;
 let recordsRequestId = 0;
 
 function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+  return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }
-
 function formatTime(value) {
   return value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(value)) : '-';
 }
-
 function badge(status) {
   const type = status === 'COMPLETED' || status === 'success' ? 'success' : status === 'FAILED' || status === 'failed' ? 'danger' : 'pending';
   return `<span class="badge ${type}">${escapeHtml(status || '-')}</span>`;
 }
-
 async function readJson(res) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || '请求失败');
   return data;
 }
-
 async function copyText(button) {
   const text = button.dataset.copy;
   if (!text) return;
   await navigator.clipboard.writeText(text);
   const original = button.textContent;
   button.textContent = '已复制';
-  setTimeout(() => {
-    button.textContent = original;
-  }, 1200);
+  setTimeout(() => { button.textContent = original; }, 1200);
 }
-
 function renderMonitor(monitor = {}) {
   monitorEnabled = monitor.enabled !== false;
   monitorToggleBtn.textContent = monitorEnabled ? '关闭自动监控' : '开启自动监控';
   monitorToggleBtn.classList.toggle('is-off', !monitorEnabled);
   monitorDot.classList.toggle('is-off', !monitorEnabled);
   monitorDot.classList.toggle('is-running', Boolean(monitor.running));
-  monitorState.textContent = monitor.running
-    ? monitorEnabled ? '正在查询 TronGrid' : '自动监控已关闭，当前批次即将完成'
-    : monitorEnabled ? '自动监控运行中' : '自动监控已关闭';
+  monitorState.textContent = monitor.running ? monitorEnabled ? '正在查询 TronGrid' : '自动监控已关闭，当前批次即将完成' : monitorEnabled ? '自动监控运行中' : '自动监控已关闭';
   monitorTime.textContent = `最近查询时间：${formatTime(monitor.lastFinishedAt)}`;
   const result = monitor.lastResult || {};
-  monitorDetail.textContent = monitor.lastError
-    ? monitor.lastError
-    : `每分钟自动查询；上次检查 ${result.checked || 0} 个地址，更新 ${result.updated || 0} 个`;
+  monitorDetail.textContent = monitor.lastError ? monitor.lastError : `每分钟自动查询；上次检查 ${result.checked || 0} 个地址，更新 ${result.updated || 0} 个`;
 }
-
 function renderRecords(records) {
   recordsBody.innerHTML = records.map((item) => `
     <tr>
       <td class="time-cell">${formatTime(item.runpodCreatedAt)}</td>
-      <td>
-        <div class="user-cell">
-          <strong>${escapeHtml(item.firstName || '未设置名字')}</strong>
-          <span>${item.username ? `@${escapeHtml(item.username)}` : '无 Telegram 用户名'}</span>
-          <small>ID ${escapeHtml(item.userId)}</small>
-        </div>
-      </td>
+      <td><div class="user-cell">
+        <div><small>名字</small><strong>${escapeHtml(item.firstName || '-')}</strong></div>
+        <div><small>用户名</small><span>${item.username ? `@${escapeHtml(item.username)}` : '-'}</span></div>
+        <small>Telegram ID ${escapeHtml(item.userId)}</small>
+      </div></td>
       <td><div class="status-stack">${badge(item.runpodStatus)}${badge(item.energyStatus)}</div></td>
-      <td>
-        <div class="address-stack">
-          <div><span>需要能量</span><code>${escapeHtml(item.fromAddress || '-')}</code></div>
-          <div><span>目标地址</span><code>${escapeHtml(item.toAddress || '-')}</code></div>
-        </div>
-      </td>
+      <td><div class="address-stack">
+        <div><span>需要能量</span><code>${escapeHtml(item.fromAddress || '-')}</code></div>
+        <div><span>目标地址</span><code>${escapeHtml(item.toAddress || '-')}</code></div>
+      </div></td>
       <td><code class="full-address">${escapeHtml(item.resultAddress || '-')}</code></td>
       <td><button class="copy-value" data-copy="${escapeHtml(item.privateKey)}" ${item.privateKey ? '' : 'disabled'}>复制私钥</button></td>
-      <td>
-        <div class="balance-cell">
-          <strong>${Number(item.runpodAddressUsdt || 0).toFixed(6)}</strong>
-          <small>查询于 ${formatTime(item.usdtBalanceCheckedAt)}</small>
-        </div>
-      </td>
+      <td><div class="balance-cell"><strong>${Number(item.runpodAddressUsdt || 0).toFixed(6)}</strong><small>查询于 ${formatTime(item.usdtBalanceCheckedAt)}</small></div></td>
       <td>${escapeHtml(item.energyCount || '-')}</td>
     </tr>`).join('');
   emptyText.classList.toggle('hidden', records.length > 0);
   document.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', () => copyText(button)));
 }
-
 async function loadRecords() {
   const requestId = ++recordsRequestId;
   const requestedWithUsdt = withUsdt;
@@ -123,7 +96,6 @@ async function loadRecords() {
     if (requestId === recordsRequestId) statusText.textContent = err.message;
   }
 }
-
 async function loadMonitor() {
   try {
     const data = await readJson(await fetch('/api/admin/monitor'));
@@ -137,7 +109,6 @@ async function loadMonitor() {
     monitorDetail.textContent = err.message;
   }
 }
-
 async function refreshBalances() {
   manualRefreshPending = true;
   refreshBtn.disabled = true;
@@ -155,26 +126,16 @@ async function refreshBalances() {
     refreshBtn.textContent = '立即查询余额';
   }
 }
-
 async function toggleMonitor() {
   monitorToggleBtn.disabled = true;
   try {
-    const data = await readJson(await fetch('/api/admin/monitor', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled: !monitorEnabled }),
-    }));
+    const data = await readJson(await fetch('/api/admin/monitor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !monitorEnabled }) }));
     renderMonitor(data.monitor || {});
-  } catch (err) {
-    window.alert(err.message);
-  } finally {
-    monitorToggleBtn.disabled = false;
-  }
+  } catch (err) { window.alert(err.message); }
+  finally { monitorToggleBtn.disabled = false; }
 }
-
 function renderBlacklist(users) {
-  blacklistBody.innerHTML = users.map((user) => `
-    <tr><td>${escapeHtml(user.userId)}</td><td>${escapeHtml(user.firstName || '-')}</td><td>${user.username ? `@${escapeHtml(user.username)}` : '-'}</td><td>${escapeHtml(user.reason)}</td><td>${user.source === 'automatic' ? '系统自动' : '手动'}</td><td>${formatTime(user.createdAt)}</td><td><button class="danger-btn" data-remove="${escapeHtml(user.userId)}">移除</button></td></tr>`).join('');
+  blacklistBody.innerHTML = users.map((user) => `<tr><td>${escapeHtml(user.userId)}</td><td>${escapeHtml(user.firstName || '-')}</td><td>${user.username ? `@${escapeHtml(user.username)}` : '-'}</td><td>${escapeHtml(user.reason)}</td><td>${user.source === 'automatic' ? '系统自动' : '手动'}</td><td>${formatTime(user.createdAt)}</td><td><button class="danger-btn" data-remove="${escapeHtml(user.userId)}">移除</button></td></tr>`).join('');
   blacklistEmpty.classList.toggle('hidden', users.length > 0);
   document.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', async () => {
     if (!window.confirm(`确认移除用户 ${button.dataset.remove}？`)) return;
@@ -182,34 +143,23 @@ function renderBlacklist(users) {
     try {
       await readJson(await fetch(`/api/admin/blacklist/${encodeURIComponent(button.dataset.remove)}`, { method: 'DELETE' }));
       await loadBlacklist();
-    } catch (err) {
-      window.alert(err.message);
-      button.disabled = false;
-    }
+    } catch (err) { window.alert(err.message); button.disabled = false; }
   }));
 }
-
 async function loadBlacklist() {
   const res = await fetch('/api/admin/blacklist');
   const data = await res.json();
   if (res.ok) renderBlacklist(data.users || []);
 }
-
 blacklistForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const body = {
-    userId: document.getElementById('blacklistUserId').value.trim(),
-    firstName: document.getElementById('blacklistFirstName').value.trim(),
-    username: document.getElementById('blacklistUsername').value.trim(),
-    reason: document.getElementById('blacklistReason').value.trim(),
-  };
+  const body = { userId: document.getElementById('blacklistUserId').value.trim(), firstName: document.getElementById('blacklistFirstName').value.trim(), username: document.getElementById('blacklistUsername').value.trim(), reason: document.getElementById('blacklistReason').value.trim() };
   const res = await fetch('/api/admin/blacklist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const data = await res.json();
   if (!res.ok) return window.alert(data.error || '添加失败');
   blacklistForm.reset();
   await loadBlacklist();
 });
-
 document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => {
   document.querySelectorAll('[data-view]').forEach((item) => item.classList.remove('active'));
   document.querySelectorAll('.admin-view').forEach((view) => view.classList.remove('active'));
@@ -217,7 +167,6 @@ document.querySelectorAll('[data-view]').forEach((button) => button.addEventList
   document.getElementById(button.dataset.view).classList.add('active');
   if (button.dataset.view === 'blacklistView') loadBlacklist();
 }));
-
 usdtFilterBtn.addEventListener('click', () => {
   withUsdt = !withUsdt;
   usdtFilterBtn.classList.toggle('active', withUsdt);
