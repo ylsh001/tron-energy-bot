@@ -1,7 +1,12 @@
 const crypto = require('crypto');
 const express = require('express');
 const config = require('../config');
-const { listAdminRecords } = require('../services/runpodJobStore');
+const { listAdminRecords, getAdminStats } = require('../services/runpodJobStore');
+const {
+  listBlacklist,
+  addUserToBlacklist,
+  removeUserFromBlacklist,
+} = require('../services/blacklistStore');
 
 const router = express.Router();
 
@@ -45,13 +50,57 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+router.get('/blacklist', requireAdmin, async (_req, res) => {
+  try {
+    return res.status(200).json({ users: await listBlacklist() });
+  } catch (err) {
+    console.error('黑名单查询失败', err);
+    return res.status(500).json({ error: '黑名单查询失败' });
+  }
+});
+
+router.post('/blacklist', requireAdmin, async (req, res) => {
+  const userId = String(req.body?.userId || '').trim();
+  if (!/^\d+$/.test(userId)) {
+    return res.status(400).json({ error: 'Telegram 用户 ID 格式不正确' });
+  }
+
+  try {
+    const user = await addUserToBlacklist({
+      userId,
+      firstName: String(req.body?.firstName || '').trim(),
+      username: String(req.body?.username || '').trim().replace(/^@/, ''),
+      reason: String(req.body?.reason || '').trim() || '管理员手动添加',
+      source: 'manual',
+    });
+    return res.status(200).json({ success: true, user });
+  } catch (err) {
+    console.error('黑名单添加失败', err);
+    return res.status(500).json({ error: '黑名单添加失败' });
+  }
+});
+
+router.delete('/blacklist/:userId', requireAdmin, async (req, res) => {
+  try {
+    await removeUserFromBlacklist(req.params.userId);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('黑名单删除失败', err);
+    return res.status(500).json({ error: '黑名单删除失败' });
+  }
+});
+
 router.get('/records', requireAdmin, async (req, res) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 100, 1), 500);
   const offset = Math.max(Number(req.query.offset) || 0, 0);
 
   try {
-    const records = await listAdminRecords({ limit, offset });
-    return res.status(200).json({ records });
+    const withUsdt = req.query.withUsdt === 'true';
+    const [records, stats] = await Promise.all([
+      listAdminRecords({ limit, offset, withUsdt }),
+      getAdminStats(),
+    ]);
+    return res.status(200).json({ records, stats });
   } catch (err) {
     console.error('管理后台查询失败', err);
     return res.status(500).json({ error: '管理后台查询失败' });

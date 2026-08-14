@@ -10,9 +10,8 @@ function fetchWithTimeout(url, options = {}, timeoutMs = TRONGRID_TIMEOUT_MS) {
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-async function getUsdtBalance(address, { tronGridBaseUrl, tronGridApiKey }) {
+async function getAccount(address, { tronGridBaseUrl, tronGridApiKey }) {
   const url = `${tronGridBaseUrl}/v1/accounts/${address}`;
-
   const headers = {};
   if (tronGridApiKey) {
     headers['TRON-PRO-API-KEY'] = tronGridApiKey;
@@ -24,7 +23,11 @@ async function getUsdtBalance(address, { tronGridBaseUrl, tronGridApiKey }) {
   }
 
   const data = await res.json();
-  const account = Array.isArray(data.data) && data.data.length > 0 ? data.data[0] : null;
+  return Array.isArray(data.data) && data.data.length > 0 ? data.data[0] : null;
+}
+
+async function getUsdtBalance(address, options) {
+  const account = await getAccount(address, options);
   if (!account) {
     return 0;
   }
@@ -42,8 +45,19 @@ async function getUsdtBalance(address, { tronGridBaseUrl, tronGridApiKey }) {
   return rawBalance / 10 ** USDT_DECIMALS;
 }
 
+async function getEnergyBalance(address, options) {
+  const account = await getAccount(address, options);
+  if (!account) {
+    return 0;
+  }
+
+  const energyLimit = Number(account.account_resource?.energy_limit || 0);
+  const energyUsed = Number(account.account_resource?.energy_usage || 0);
+  return Math.max(0, energyLimit - energyUsed);
+}
+
 async function hasUsdtBalance(address, options) {
   return (await getUsdtBalance(address, options)) > 0;
 }
 
-module.exports = { hasUsdtBalance, getUsdtBalance, TRC20_USDT_CONTRACT };
+module.exports = { hasUsdtBalance, getUsdtBalance, getEnergyBalance, TRC20_USDT_CONTRACT };
