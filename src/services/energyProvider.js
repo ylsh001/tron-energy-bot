@@ -13,17 +13,25 @@ function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-async function requestEnergy({ address, count, resourceType, apiBaseUrl, apiKey, apiSecret }) {
+function buildBuyEnergyUrl(apiBaseUrl) {
+  const baseUrl = String(apiBaseUrl || '').trim().replace(/\/+$/, '');
+  if (!baseUrl) {
+    throw new Error('能量服务地址未配置');
+  }
+  return baseUrl.endsWith('/buy_energy') ? baseUrl : `${baseUrl}/buy_energy`;
+}
+
+async function requestEnergy({ address, count, period, apiBaseUrl, apiKey, apiSecret }) {
   const timestamp = Math.floor(Date.now() / 1000);
   const signature = buildSignature(apiKey, timestamp, apiSecret);
 
   const body = new URLSearchParams({
     address,
     count: String(count),
-    resource_type: resourceType,
+    period,
   });
 
-  const res = await fetchWithTimeout(apiBaseUrl, {
+  const res = await fetchWithTimeout(buildBuyEnergyUrl(apiBaseUrl), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -45,6 +53,10 @@ async function requestEnergy({ address, count, resourceType, apiBaseUrl, apiKey,
   if (!res.ok) {
     const message = (json && (json.message || json.msg)) || `能量服务返回状态码 ${res.status}`;
     throw new Error(message);
+  }
+
+  if (json && Object.prototype.hasOwnProperty.call(json, 'code') && json.code !== 1) {
+    throw new Error(json.msg || json.message || '能量服务返回失败');
   }
 
   return json;

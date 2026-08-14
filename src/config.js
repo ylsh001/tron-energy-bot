@@ -25,9 +25,10 @@ module.exports = {
   tronGridBaseUrl: required('TRONGRID_BASE_URL', 'https://api.trongrid.io'),
   tronGridApiKey: process.env.TRONGRID_API_KEY || '',
 
-  energyProviderApiUrl: process.env.ENERGY_PROVIDER_API_URL || '',
+  energyProviderApiUrl: process.env.ENERGY_PROVIDER_API_URL || 'https://weidubot.cc/api/v2',
   energyProviderApiKey: process.env.ENERGY_PROVIDER_API_KEY || '',
   energyProviderApiSecret: process.env.ENERGY_PROVIDER_API_SECRET || '',
+  energyProviderPeriod: required('ENERGY_PROVIDER_PERIOD', '15minutes'),
 
   runpodApiKey: process.env.RUNPOD_API_KEY || '',
   runpodEndpointId: process.env.RUNPOD_ENDPOINT_ID || '',

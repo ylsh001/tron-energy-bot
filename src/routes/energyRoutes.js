@@ -123,7 +123,7 @@ router.post('/request', async (req, res) => {
     const result = await requestEnergy({
       address: fromAddress,
       count: energyCount,
-      resourceType: 'energy',
+      period: config.energyProviderPeriod,
       apiBaseUrl: config.energyProviderApiUrl,
       apiKey: config.energyProviderApiKey,
       apiSecret: config.energyProviderApiSecret,
