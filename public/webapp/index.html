@@ -3,67 +3,37 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>免费领取能量</title>
+<title>TRON 能量服务</title>
 <link rel="stylesheet" href="./style.css" />
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>⚡ 领取能量</h1>
-    <p class="subtitle">填写两个地址，一键获取免费能量</p>
-
-    <div class="field">
-      <label for="fromAddress">需要能量的地址</label>
-      <input
-        id="fromAddress"
-        type="text"
-        inputmode="text"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        placeholder="请输入 TRON 地址，例如 TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-      />
-    </div>
-
-    <div class="field">
-      <label for="toAddress">发送的目标地址</label>
-      <input
-        id="toAddress"
-        type="text"
-        inputmode="text"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        placeholder="请输入接收转账的 TRON 地址"
-      />
-    </div>
-
-    <div id="progressBox" class="progress-box hidden" aria-live="polite">
-      <div class="progress-head">
-        <span id="progressTitle">正在提交任务</span>
-        <strong id="progressPercent">0%</strong>
+  <main class="app-shell">
+    <section id="freePanel" class="page-panel active">
+      <div class="hero-mark">⚡</div>
+      <h1>免费能量</h1>
+      <p class="subtitle">每天 5 次免费领取机会</p>
+      <div class="form-card">
+        <div class="field"><label for="fromAddress">需要能量的地址</label><input id="fromAddress" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="请输入 TRON 地址" /></div>
+        <div class="field"><label for="toAddress">发送的目标地址</label><input id="toAddress" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="请输入接收转账的 TRON 地址" /></div>
+        <div id="progressBox" class="progress-box hidden" aria-live="polite"><div class="progress-head"><span id="progressTitle">正在提交任务</span><strong id="progressPercent">0%</strong></div><div class="progress-track"><div id="progressBar" class="progress-bar"></div></div><p id="progressText" class="progress-text">正在准备领取环境，请稍候...</p></div>
+        <p id="error" class="error hidden"></p><button id="claimBtn" class="primary-btn">点击获取能量</button><p id="toast" class="toast hidden"></p>
       </div>
-      <div class="progress-track">
-        <div id="progressBar" class="progress-bar"></div>
-      </div>
-      <p id="progressText" class="progress-text">正在准备领取环境，请稍候...</p>
-    </div>
-
-    <p id="error" class="error hidden"></p>
-
-    <button id="claimBtn" class="copy-btn">⚡ 点击获取能量</button>
-
-    <p id="toast" class="toast hidden"></p>
-  </div>
-
-  <div id="confirmModal" class="confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
-    <div class="confirm-card">
-      <h2 id="confirmModalTitle">检测成功</h2>
-      <p id="confirmModalText">本次将发放 65000 能量。</p>
-      <button id="confirmClaimBtn" class="copy-btn" type="button">确认领取</button>
-    </div>
-  </div>
-
-  <script src="./app.js"></script>
+    </section>
+    <section id="paidPanel" class="page-panel">
+      <div class="section-kicker">ENERGY RENTAL</div><h1>付费能量</h1><p class="subtitle">向下方地址转入对应数量的 TRX</p>
+      <div class="address-card"><span class="card-label">付费能量地址</span><button class="address-copy" type="button" data-copy="TD6F9MiGuJVnRma98tPSSsp4qNUf3Secnh"><strong>TD6F9MiGuJVnRma98tPSSsp4qNUf3Secnh</strong><span>点击复制</span></button></div>
+      <div class="pricing-grid"><article class="price-card"><span>对方有 U</span><strong>1.5 <small>TRX</small></strong><p>获得 65000 能量</p></article><article class="price-card featured"><span>对方无 U</span><strong>3 <small>TRX</small></strong><p>获得 130000 能量</p></article></div>
+      <div class="notice-card"><strong>转账后系统将自动识别并发放能量</strong><p>对方地址有 U 需要消耗 65000 能量</p><p>对方地址无 U 需要消耗双倍能量</p><span>这是 TRX 区块链网络的设定</span></div>
+    </section>
+    <section id="exchangePanel" class="page-panel">
+      <div class="section-kicker">INSTANT EXCHANGE</div><h1>USDT 换 TRX</h1><p class="subtitle">实时价格计算</p>
+      <div class="exchange-card"><div class="asset-row"><div class="asset-badge usdt">U</div><div><span>USDT</span><strong>10</strong></div></div><div class="quick-values"><button type="button" data-usdt="10">10 USDT</button><button type="button" data-usdt="50">50 USDT</button><button type="button" data-usdt="100">100 USDT</button></div><div class="swap-line"><span>↓</span></div><div class="asset-row"><div class="asset-badge trx">T</div><div><span>TRX</span><strong id="trxAmount">28.41</strong></div></div><p class="rate">1 USDT ≈ 2.84 TRX</p></div>
+      <div class="transfer-card"><strong>→ 向此地址转账，系统将自动完成兑换</strong><button class="address-copy compact" type="button" data-copy="TWA1RZpiVDodDjAZ2MtxKC7ZifKKKKKKKK"><span class="exchange-address">TWA1RZpiVDodDjAZ2MtxKC7ZifKKKKKKKK</span><b>复制</b></button><p>最低付款 1 USDT　最高 2000 USDT</p><span>3 秒完成兑换 · 请勿使用交易所提币</span></div>
+    </section>
+  </main>
+  <nav class="bottom-nav" aria-label="功能菜单"><button class="nav-item active" type="button" data-panel="freePanel"><span>⚡</span><b>免费能量</b></button><button class="nav-item" type="button" data-panel="paidPanel"><span>◈</span><b>付费能量</b></button><button class="nav-item" type="button" data-panel="exchangePanel"><span>⇄</span><b>兑换 TRX</b></button></nav>
+  <div id="confirmModal" class="confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle"><div class="confirm-card"><div class="modal-icon">✓</div><h2 id="confirmModalTitle">加入队列成功</h2><p>任务已完成排队处理，点击下方按钮继续领取。</p><button id="confirmClaimBtn" class="primary-btn" type="button">点击领取</button></div></div>
+  <div id="copyToast" class="copy-toast hidden">已复制</div><script src="./app.js"></script>
 </body>
 </html>
