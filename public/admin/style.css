@@ -81,9 +81,15 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.admin-nav { display: flex; gap: 8px; margin-bottom: 18px; padding: 6px; width: fit-content; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.admin-nav button { padding: 9px 16px; border: 0; border-radius: 10px; color: var(--muted); background: transparent; font-weight: 700; }
+.admin-nav button.active { color: #fff; background: var(--accent); }
+.admin-view { display: none; }
+.admin-view.active { display: block; }
+
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -220,6 +226,16 @@ code {
   color: var(--pending);
 }
 
+.secondary { padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--accent); background: #fff; font-weight: 700; }
+.secondary.active { color: #fff; background: var(--accent); }
+.blacklist-form { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1.5fr auto; gap: 10px; margin-bottom: 18px; }
+.blacklist-form input { min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.blacklist-form button, .danger-btn { border: 0; border-radius: 10px; color: #fff; font-weight: 700; }
+.blacklist-form button { padding: 10px 16px; background: var(--accent); }
+.danger-btn { padding: 7px 11px; background: #cf4155; }
+.copy-value { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--accent); background: #fff; }
+code { font-size: 12px; }
+
 .empty {
   padding: 28px;
   color: var(--muted);
@@ -241,6 +257,10 @@ code {
   }
 
   .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .blacklist-form {
     grid-template-columns: 1fr;
   }
 }
