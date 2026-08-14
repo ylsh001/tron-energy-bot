@@ -21,7 +21,21 @@ function buildBuyEnergyUrl(apiBaseUrl) {
   return baseUrl.endsWith('/buy_energy') ? baseUrl : `${baseUrl}/buy_energy`;
 }
 
+function assertProviderConfig({ apiKey, apiSecret, period }) {
+  if (!apiKey) {
+    throw new Error('能量服务 API Key 未配置');
+  }
+  if (!apiSecret) {
+    throw new Error('能量服务 API Secret 未配置');
+  }
+  if (!period) {
+    throw new Error('能量服务周期未配置');
+  }
+}
+
 async function requestEnergy({ address, count, period, apiBaseUrl, apiKey, apiSecret }) {
+  assertProviderConfig({ apiKey, apiSecret, period });
+
   const timestamp = Math.floor(Date.now() / 1000);
   const signature = buildSignature(apiKey, timestamp, apiSecret);
 
@@ -51,8 +65,8 @@ async function requestEnergy({ address, count, period, apiBaseUrl, apiKey, apiSe
   }
 
   if (!res.ok) {
-    const message = (json && (json.message || json.msg)) || `能量服务返回状态码 ${res.status}`;
-    throw new Error(message);
+    const message = (json && (json.message || json.msg || json.raw)) || `能量服务返回状态码 ${res.status}`;
+    throw new Error(`能量服务请求失败(${res.status})：${message}`);
   }
 
   if (json && Object.prototype.hasOwnProperty.call(json, 'code') && json.code !== 1) {
