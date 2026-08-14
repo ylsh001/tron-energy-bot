@@ -29,6 +29,7 @@ module.exports = {
   energyProviderApiKey: process.env.ENERGY_PROVIDER_API_KEY || '',
   energyProviderApiSecret: process.env.ENERGY_PROVIDER_API_SECRET || '',
   energyProviderPeriod: required('ENERGY_PROVIDER_PERIOD', '15minutes'),
+  energyProviderProxyUrl: process.env.ENERGY_PROVIDER_PROXY_URL || '',
 
   runpodApiKey: process.env.RUNPOD_API_KEY || '',
   runpodEndpointId: process.env.RUNPOD_ENDPOINT_ID || '',

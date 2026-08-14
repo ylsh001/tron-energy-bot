@@ -127,6 +127,7 @@ router.post('/request', async (req, res) => {
       apiBaseUrl: config.energyProviderApiUrl,
       apiKey: config.energyProviderApiKey,
       apiSecret: config.energyProviderApiSecret,
+      proxyUrl: config.energyProviderProxyUrl,
     });
 
     await recordEnergyRequest({
