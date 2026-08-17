@@ -10,7 +10,9 @@ const { router: adminRoutes, requireAdmin } = require('./routes/adminRoutes');
 
 const app = express();
 app.use(express.json());
-app.get('/api/webapp/config', (_req, res) => res.status(200).json({ exchangeAddress: config.exchangeAddress }));
+app.get('/api/webapp/config', (_req, res) => {
+  res.status(200).json({ energyAddress: config.energyAddress, exchangeAddress: config.exchangeAddress });
+});
 app.use('/webapp', express.static(path.join(__dirname, '..', 'public', 'webapp')));
 app.use('/admin', requireAdmin, express.static(path.join(__dirname, '..', 'public', 'admin')));
 app.use('/api/runpod', runpodRoutes);
@@ -32,7 +34,6 @@ async function start() {
   }
 }
 start();
-
 async function shutdown(signal) {
   stopUsdtBalanceMonitor();
   bot.stop(signal);

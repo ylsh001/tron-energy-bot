@@ -1,9 +1,13 @@
 require('dotenv').config();
-function required(name, fallback) { return process.env[name] || fallback; }
+
+function required(name, fallback) {
+  return process.env[name] || fallback;
+}
+
 module.exports = {
   botToken: process.env.BOT_TOKEN,
   port: process.env.PORT || 3000,
-  energyAddress: required('ENERGY_ADDRESS', 'TDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+  energyAddress: process.env.ENERGY_ADDRESS || '',
   webAppUrl: required('WEBAPP_URL', 'https://your-miniapp-domain.example.com'),
   supportUsername: required('SUPPORT_USERNAME', 'your_support_username'),
   priceWithUsdt: required('PRICE_WITH_USDT', '1.5'),
